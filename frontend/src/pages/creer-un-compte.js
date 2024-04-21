@@ -9,6 +9,7 @@ import { showToast, ToastContainer, notifySuccess, notifyError, notifyInfo, noti
 const CreateModule = () => {
     const [errors, setErrors] = useState({});
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [pseudo, setPseudo] = useState('');
     const [surname, setSurname] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -35,6 +36,7 @@ const CreateModule = () => {
         }
 
         const formData = new FormData();
+        formData.append('pseudo', pseudo);
         formData.append('surname', surname);
         formData.append('name', name);
         formData.append('email', email);
@@ -43,15 +45,17 @@ const CreateModule = () => {
         formData.append('image', image);
 
         axios
-            .post('http://localhost:8081/create', formData, {
+            .post('http://localhost:8081/register', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                withCredentials: true,
             })
             .then((res) => {
                 console.log(res);
-                notifySuccess("Compte ajouté avec succès");
-                Navigate('/admin/comptes');
+                notifySuccess("Inscription réussie");
+                handleUpdateUserData();
+                Router.push('/profil');
             })
             .catch((err) => {
                 if (err.response && err.response.status === 409) {
@@ -72,6 +76,16 @@ const CreateModule = () => {
                     Ajouter un compte
                 </Typography>
                 <form onSubmit={handleSubmit}>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        label="Pseudo"
+                        onChange={(e) => setPseudo(e.target.value)}
+                        value={pseudo}
+                        error={Boolean(errors.pseudo)}
+                        helperText={errors.pseudo}
+                    />
                     <TextField
                         margin="normal"
                         required
@@ -141,7 +155,7 @@ const CreateModule = () => {
                     />
                     <Button type="submit" fullWidth variant="contained" size='large' sx={{ mt: 3, mb: 1 }}>
                         Valider
-                    </Button>      
+                    </Button>
                     <CustomButton fullWidth variant="text" to="/se-connecter" size='large'>
                         J'ai déjà un compte
                     </CustomButton>

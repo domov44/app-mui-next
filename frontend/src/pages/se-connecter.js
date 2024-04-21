@@ -1,21 +1,23 @@
-import React, { useState, useRef, useContext } from 'react';
-import {
-  TextField,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Container,
-  Typography,
-  Paper,
-  IconButton, // Importez IconButton
-  InputAdornment, // Importez InputAdornment
-} from '@mui/material';
-import { UserContext } from '../utils/UserContext';
-import VisibilityIcon from '@mui/icons-material/Visibility'; // Importez l'icône pour afficher le mot de passe
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'; // Importez l'icône pour masquer le mot de passe
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Router from 'next/router';
-import CustomButton from '../components/CustomButton';
+import { UserContext } from '../utils/UserContext';
+import { getUserRole } from '../utils/auth';
+import {
+  Container,
+  Typography,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Button,
+  Paper,
+  IconButton,
+  InputAdornment,
+  Grid,
+} from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CustomButton from '@/components/CustomButton';
 import {
   showToast,
   ToastContainer,
@@ -30,15 +32,23 @@ function LoginForm() {
   const { handleUpdateUserData } = useContext(UserContext);
 
   const [values, setValues] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [errors, setErrors] = useState({});
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Nouvel état pour gérer l'affichage du mot de passe
+  const [showPassword, setShowPassword] = useState(false);
   const [globalError, setGlobalError] = useState('');
 
   const form = useRef(null);
+
+  useEffect(() => {
+    getUserRole().then((role) => {
+      if (role) {
+        Router.push('http://localhost:3000');
+      }
+    });
+  }, []);
 
   const handleInput = (event) => {
     const { name, value } = event.target;
@@ -62,34 +72,39 @@ function LoginForm() {
     const hasErrors = Object.values(validationErrors).some((error) => error !== '');
 
     if (!hasErrors) {
-      try {
-        const response = await axios.post('http://localhost:8081/user', values);
-        if (response.data.Login) {
-          const expirationDate = new Date();
-          expirationDate.setDate(expirationDate.getDate() + 1);
-          const cookieString = `token=${response.data.token}; expires=${expirationDate.toUTCString()}; path=/`;
-          document.cookie = cookieString;
-          handleUpdateUserData();
-          Router.push('/recettes');
-          notifySuccess('Connexion établie avec succès');
-        } else {
-          setErrors({ ...errors, password: 'Email ou mot de passe incorrect' });
-        }
-      } catch (error) {
-        console.error('Erreur lors de la connexion :', error);
-        if (error.response && error.response.status === 429) {
-          setGlobalError('Trop de tentatives. Veuillez réessayer plus tard.');
-        } else {
-          setGlobalError("Une erreur s'est produite lors de la connexion. Veuillez réessayer.");
-        }
-      }
+      axios
+        .post('http://localhost:8081/login', { ...values, rememberMe }, { withCredentials: true })
+        .then((res) => {
+          if (res.data.Login) {
+            notifySuccess('Connexion établie avec succès');
+            handleUpdateUserData();
+            Router.push('/profil');
+          } else {
+            notifyError('Vous n\'avez pas été connecté');
+            setErrors({ ...errors, password: "Nom d'utilisateur ou mot de passe incorrect" });
+          }
+        })
+        .catch((err) => {
+          if (err.response && err.response.status === 429) {
+            setGlobalError("Trop de tentatives. Veuillez réessayer plus tard.");
+            notifyError('Il y\'a eu un problème');
+          }
+          else if (err.response && err.response.data && err.response.data.success === false) {
+            const errorMessage = err.response.data.message || "Une erreur s'est produite lors de la connexion. Veuillez réessayer.";
+            setGlobalError(errorMessage);
+            notifyError('Il y\'a eu une erreur');
+          } else {
+            notifyError('Il y\'a eu une erreur');
+            setGlobalError("Une erreur s'est produite lors de la connexion. Veuillez réessayer.");
+          }
+        });
     }
   };
 
   const validateForm = (formValues) => {
     const errors = {};
-    if (!formValues.email) {
-      errors.email = 'Ce champ est requis';
+    if (!formValues.username) {
+      errors.username = 'Ce champ est requis';
     }
     if (!formValues.password) {
       errors.password = 'Ce champ est requis';
@@ -99,64 +114,64 @@ function LoginForm() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Paper elevation={3} sx={{ padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5">
-          Connexion
-        </Typography>
-        <form ref={form} onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            id="email"
-            label="Email"
-            name="email"
-            autoComplete="new-email"
-            value={values.email}
-            onChange={handleInput}
-            error={Boolean(errors.email)}
-            helperText={errors.email}
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            id="password"
-            label="Mot de passe"
-            name="password"
-            type={showPassword ? 'text' : 'password'} // Utilisez le type conditionnel en fonction de l'état showPassword
-            autoComplete="new-password"
-            value={values.password}
-            onChange={handleInput}
-            error={Boolean(errors.password)}
-            helperText={errors.password}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={handleShowPassword} edge="end">
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox checked={rememberMe} onChange={handleRememberMeChange} name="rememberMe" color="primary" />
-            }
-            label="Se souvenir de moi"
-          />
-          <Button type="submit" fullWidth variant="contained" color="primary" size='large' sx={{ mt: 3, mb: 1 }}>
-            Se connecter
-          </Button>
-          <CustomButton fullWidth variant="text" to="/creer-un-compte" size='large'>
-            Créer mon compte
-          </CustomButton>
-        </form>
-      </Paper>
+      <Grid container justifyContent="center" alignItems="center" style={{ height: 'calc( 100vh - 64px' }}>
+        <Paper elevation={3} sx={{ padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Typography component="h1" variant="h5">
+            Connexion
+          </Typography>
+          <form ref={form} onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              id="username"
+              name='username'
+              label="Nom d'utilisateur ou email"
+              placeholder="Nom d'utilisateur ou email"
+              onChange={handleInput}
+              error={Boolean(errors.username)}
+              helperText={errors.username}
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              id="password"
+              name='password'
+              label="Mot de passe"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Mot de passe"
+              onChange={handleInput}
+              error={Boolean(errors.password)}
+              helperText={errors.password}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleShowPassword} edge="end">
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {globalError && <p>{globalError}</p>}
+            <FormControlLabel
+              control={
+                <Checkbox checked={rememberMe} onChange={handleRememberMeChange} name="rememberMe" color="primary" />
+              }
+              label="Se souvenir de moi"
+            />
+            <Button type="submit" fullWidth variant="contained" color="primary" size='large' sx={{ mt: 3, mb: 1 }}>
+              Se connecter
+            </Button>
+            <CustomButton fullWidth variant="text" to="/creer-un-compte" size='large'>
+              Créer mon compte
+            </CustomButton>
+          </form>
+        </Paper>
+      </Grid>
     </Container>
   );
 }
 
 export default LoginForm;
-

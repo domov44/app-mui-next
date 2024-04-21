@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import getToken from './getToken';
 
 const UserContext = createContext();
 
@@ -27,57 +26,49 @@ const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getToken();
-
-        if (token) {
-          const response = await axios.get('http://localhost:8081/user/getUserData', {
-            headers: {
-              'access-token': token,
-            },
-          });
-
-          if (response.data && response.data.name) {
-            const {
-              pseudo,
-              name,
-              ddn,
-              description,
-              creation_date,
-              surname,
-              picture,
-              email,
-              role,
-              role_id,
-              ville,
-            } = response.data;
-
-            const birthDate = new Date(ddn);
-            const formattedBirthDate =
-              ("0" + birthDate.getDate()).slice(-2) +
-              "/" +
-              ("0" + (birthDate.getMonth() + 1)).slice(-2) +
-              "/" +
-              birthDate.getFullYear();
-
-            const creationDate = new Date(creation_date);
-
-            setUserData((prevUserData) => ({
-              ...prevUserData,
-              pseudo,
-              name,
-              ddn: formattedBirthDate,
-              description,
-              creation_date,
-              surname,
-              picture,
-              email,
-              role,
-              role_id,
-              ville,
-            }));
-
-            setIsUserDataLoaded(true);
-          }
+        const response = await axios.get('http://localhost:8081/user/getUserData', { withCredentials: true });
+    
+        if (response.data && response.data.name) {
+          const {
+            pseudo,
+            name,
+            ddn,
+            description,
+            creation_date,
+            surname,
+            picture,
+            email,
+            role,
+            role_id,
+            ville,
+          } = response.data;
+    
+          const birthDate = new Date(ddn);
+          const formattedBirthDate =
+            ("0" + birthDate.getDate()).slice(-2) +
+            "/" +
+            ("0" + (birthDate.getMonth() + 1)).slice(-2) +
+            "/" +
+            birthDate.getFullYear();
+    
+          const creationDate = new Date(creation_date);
+    
+          setUserData((prevUserData) => ({
+            ...prevUserData,
+            pseudo,
+            name,
+            description,
+            ddn: formattedBirthDate,
+            creation_date,
+            surname,
+            email,
+            picture,
+            role: role.label,
+            role_id: role_id,
+            ville: ville ? ville.label : '',
+          }));
+    
+          setIsUserDataLoaded(true);
         }
       } catch (error) {
         console.error(error);
@@ -85,7 +76,6 @@ const UserProvider = ({ children }) => {
     };
 
     fetchData();
-
   }, [reloadUserData]);
 
   const handleUpdateUserData = () => {

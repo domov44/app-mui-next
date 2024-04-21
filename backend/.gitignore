@@ -8,6 +8,10 @@
 # Ignorer le fichier .env
 .env
 
+# Ignorer les fichiers .pem
+private_key.pem
+public_key.pem
+
 # Ignorer les logs
 log.json
 

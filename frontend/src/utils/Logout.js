@@ -6,26 +6,18 @@ import { UserContext } from './UserContext';
 import Router from 'next/router';
 
 const Logout = () => {
-    const { handleLogout } = useContext(UserContext); // Utiliser la fonction de déconnexion du contexte
+    const { handleLogout } = useContext(UserContext);
 
-    const handleLogoutRequest = async () => {
-        try {
-            // Effectuer une requête vers le serveur pour signaler la déconnexion
-            await axios.get('http://localhost:8081/logout');
-
-            // Effacer le cookie côté client
-            const expirationDate = new Date(0);
-            const cookieString = `token=; expires=${expirationDate.toUTCString()}; path=/`;
-            document.cookie = cookieString;
-
-            // Effectuer les actions nécessaires côté client
-            notifySuccess("Déconnexion réussie");
-            handleLogout();
-            Router.push('/');
-        } catch (err) {
-            console.error(err);
-            notifyError("Une erreur s'est produite lors de la déconnexion.");
-        }
+    const handleLogoutRequest = () => {
+        axios.get('http://localhost:8081/user/logout', { withCredentials: true })
+            .then(res => {
+                if (res.data.Status === "Success") {
+                    notifySuccess("Déconnexion réussie");
+                    handleLogout();
+                    Router.push('/se-connecter');
+                }
+            })
+            .catch(err => console.log(err))
     };
     
     return (
