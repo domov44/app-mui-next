@@ -1,0 +1,63 @@
+:root {
+  --success-color: #1dffac;
+  --success-bg: #1f352d;
+  --primary: rgb(var(--success));
+  --toastify-color-light: #fff;
+  --toastify-color-success: var(--success-bg) !important;
+  --toastify-color-info: #3498db;
+  --toastify-color-success: var(--success-color) !important;
+  --toastify-color-warning: #ff4000;
+  --toastify-color-error: #ff5000;
+  --toastify-color-transparent: rgba(255, 255, 255, 0.7);
+  --toastify-icon-color-info: var(--toastify-color-info);
+  --toastify-color-success: var(--success-color) !important;
+  --toastify-icon-color-warning: var(--toastify-color-warning);
+  --toastify-icon-color-error: var(--toastify-color-error);
+  --toastify-toast-width: 320px;
+  --toastify-toast-background: #fff;
+  --toastify-toast-min-height: 64px;
+  --toastify-toast-max-height: 800px;
+  --toastify-font-family: sans-serif;
+  --toastify-z-index: 9999;
+  --toastify-text-color-light: #56a77f;
+  --toastify-color-success: var(--success-color) !important;
+  --toastify-color-progress-dark: #bb86fc;
+  --toastify-color-progress-info: var(--toastify-color-info);
+  --toastify-color-success: var(--success-color) !important;
+  --toastify-color-progress-warning: var(--toastify-color-warning);
+  --toastify-color-progress-error: var(--toastify-color-error);
+}
+
+.theme-container {
+  display: flex;
+  position: relative;
+}
+
+.radio-theme {
+  margin-left: 0;
+  margin-right: 0;
+  left: 15px;
+  position: absolute;
+  bottom: 12px;
+  accent-color: var(--success-color);
+  background: none;
+}
+
+.label-theme {
+  border: solid grey 2px;
+  border-radius: 5px;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+
+:checked + .label-theme {
+  border: solid var(--success-color) 2px;
+  border-radius: 5px;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+
+.text-theme {
+  margin-left: 40px;
+  color: var(--paragraph);
+}/*# sourceMappingURL=globals.css.map */
