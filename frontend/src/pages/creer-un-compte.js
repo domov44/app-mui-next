@@ -157,7 +157,7 @@ const CreateModule = () => {
                         Valider
                     </Button>
                     <CustomButton fullWidth variant="text" to="/se-connecter" size='large'>
-                        J'ai déjà un compte
+                        J&apos;ai déjà un compte
                     </CustomButton>
                 </form>
             </Paper>
