@@ -23,6 +23,8 @@ import { UserContext } from '../../utils/UserContext';
 import Container from '@mui/material/Container';
 import Tooltip from '@mui/material/Tooltip';
 import Router from 'next/router';
+import Logout from '@/utils/Logout';
+import CustomButton from '../CustomButton';
 
 const drawerWidth = 240;
 
@@ -76,9 +78,18 @@ const handleProfileClick = () => {
 };
 
 export default function DefaultLayout({ children }) {
-  const { userData } = React.useContext(UserContext);
+  const { userData, isLoading, isUserDataLoaded } = React.useContext(UserContext);
+  const [authStatus, setAuthStatus] = React.useState(null);
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isLoading || !isUserDataLoaded) {
+      return;
+    }
+    setAuthStatus(userData.role_id && userData.email ? 'Authenticated' : null);
+
+  }, [isLoading, userData, isUserDataLoaded]);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -104,11 +115,18 @@ export default function DefaultLayout({ children }) {
               <MenuIcon />
             </IconButton>
             <Box sx={{ flexGrow: 1 }} />
-            <Tooltip title="Votre profil">
-              <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
-                <Avatar alt={userData.name} src={userData.picture} />
-              </IconButton>
-            </Tooltip>
+            {authStatus === null &&
+              <CustomButton variant="contained" color="primary" to="/se-connecter">
+                Se connecter
+              </CustomButton>
+            }
+            {authStatus === 'Authenticated' &&
+              <Tooltip title="Votre profil">
+                <IconButton onClick={handleProfileClick} sx={{ p: 0 }}>
+                  <Avatar alt={userData.name} src={userData.picture} />
+                </IconButton>
+              </Tooltip>
+            }
           </Toolbar>
         </Container>
       </AppBar>
@@ -132,9 +150,9 @@ export default function DefaultLayout({ children }) {
         </DrawerHeader>
         <Divider />
         <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+          {['Accueil', 'Trash', 'Spam'].map((text, index) => (
             <ListItem key={text} disablePadding>
-              <ListItemButton>
+              <ListItemButton href="/">
                 <ListItemIcon>
                   {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                 </ListItemIcon>
@@ -143,19 +161,14 @@ export default function DefaultLayout({ children }) {
             </ListItem>
           ))}
         </List>
-        <Divider />
-        <List>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+        {authStatus === 'Authenticated' &&
+          <>
+            <Divider />
+            <List>
+              <Logout />
+            </List>
+          </>
+        }
       </Drawer>
       <Main open={open}>
         {children}
