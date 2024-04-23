@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "/frontend/pages/**",
+      "src": "/frontend/pages/**/*.js",
       "use": "@vercel/next/pages"
     },
     {
@@ -27,6 +27,10 @@
       "src": "/backend/public/(.*)",
       "dest": "/backend/public/$1",
       "status": 200
+    },
+    {
+      "src": "/_next/(.*)",
+      "dest": "/_next/$1"
     },
     {
       "src": "/(.*)",
