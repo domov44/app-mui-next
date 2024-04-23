@@ -114,8 +114,8 @@ function LoginForm() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Grid container justifyContent="center" alignItems="center" style={{ height: 'calc( 100vh - 69px' }}>
-        <Paper elevation={3} sx={{ padding: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Grid container justifyContent="center" alignItems="center" style={{ height: 'calc( 100vh - 69px' }} sx={{ width: '500px'  }}>
+        <Paper elevation={3} sx={{ padding: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '10000px'  }}>
           <Typography component="h1" variant="h5">
             Connexion
           </Typography>
