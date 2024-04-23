@@ -19,7 +19,6 @@ const { Sequelize } = require('sequelize');
 const sequelize = new Sequelize('app_mui_next', 'root', '', {
   host: 'localhost',
   dialect: 'mysql',
-  port:'3307',
   define: {
     freezeTableName: true,
     timestamps: false,
